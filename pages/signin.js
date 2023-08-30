@@ -1,16 +1,11 @@
-import { signIn } from "next-auth/react"
-import { getCsrfToken } from "next-auth/react"
 import { useState } from "react"
+import { auth } from "config/client"
+import { signInWithEmailAndPassword } from "firebase/auth"
+import { useRouter } from "next/router"
 
-export default function SignIn({ csrfToken }){
+export default function SignIn(){
 
-    async function handleSubmit(e){
-        e.preventDefault()
-        console.log( {...credentials,callbackUrl: `/instalaciones`})
-        const res = await signIn("credentials", {...credentials,callbackUrl: `/instalaciones`})
-        console.log('res: ',res)
-    }
-
+    const router = useRouter()
     const [credentials,setCredentials] = useState({ email: "", password: "" })
 
     const handleChange = (e) => {
@@ -18,47 +13,32 @@ export default function SignIn({ csrfToken }){
         setCredentials({ ...credentials, [name]: value })
     }
 
-    // return(
-    // <div>
-    //     <form onSubmit={handleSubmit} id="login-form">
-    //         <h1>Login</h1>
-    //         <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
-    //         <label htmlFor="email">Correo electrónico</label>
-    //         <input name='email' type="email" onChange={handleChange}/>
-    //         <label htmlFor="password">Contraseña</label>
-    //         <input name="password" onChange={handleChange} type="password"/>
-            
-    //         <input type="submit"/>
-    //     </form>
-    // </div>)
-
-    async function signinUser(e){
-        e.preventDefault()
-        let options = {callbackUrl: `/instalaciones`,redirect:false,...credentials}
-        const res = await signIn("credentials",options)
-        //console.log('options',options)
-        console.log(res)
+    async function signIn(form) {
+        form.preventDefault()
+        await signInWithEmailAndPassword(auth, credentials.email, credentials.password)
+        .then((userCredential) => {
+            //const userInfo = await getUserInfo(userCredential.user)
+            //reserva.usuario = userInfo._id
+            router.push('/')}
+        )
+        .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            alert("Credenciales invalidas")
+            console.log("code:", errorCode, "msg:", errorMessage)
+            return false
+        });
     }
 
     return(
     <div>
         <form id="login-form">
             <h1>Login</h1>
-            <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
             <label htmlFor="email">Correo electrónico</label>
             <input name='email' type="email" onChange={handleChange}/>
             <label htmlFor="clave">Contraseña</label>
-            <input name="password" onChange={handleChange} type="password"/>
-            
-            <button onClick={(e)=>{signinUser(e)}} >Sign in</button>
+            <input name="password" onChange={handleChange} type="password"/> 
+            <button onClick={(form)=>{signIn(form)}} >Sign in</button>
         </form>
     </div>)
-}
-
-export async function getServerSideProps(context) {
-    return {
-      props: {
-        csrfToken: await getCsrfToken(context),
-      },
-    }
 }

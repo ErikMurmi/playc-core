@@ -15,7 +15,9 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
+        <h1>BIENVENIDO</h1>
         <Image id='logo-img' src={Logo} height={200} alt="app_logo"></Image>
+        <p>Inicia sesion o registrate para acceder</p>
 
         {/* <div className={styles.grid}>
           <a href="/auth/signin" className={styles.card}>
